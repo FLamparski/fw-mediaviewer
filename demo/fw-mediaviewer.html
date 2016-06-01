@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <title>fw-mediaviewer demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../moment/min/moment-with-locales.min.js"></script>
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../fw-mediaviewer.html">
+  <style is="custom-style" include="demo-pages-shared-styles">
+    .centered {
+      max-width: 700px;
+    }
+  </style>
+</head>
+<body>
+  <div class="vertical-section-container centered">
+    <h4>Basic usage</h4>
+    <p>Show multiple photos. No extra titles or anything fancy like that.</p>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind">
+          <fw-mediaviewer id="basic"></fw-mediaviewer>
+
+          <button type="button" class="open">Open</button>
+          <button type="button" class="basicOpenOnPage">Open on page</button>
+
+          <script type="text/javascript">
+            (function(x) {
+              const exampleMedia = [
+                {type: 'image', src: 'https://source.unsplash.com/random?t=1'},
+                {type: 'image', src: 'https://source.unsplash.com/random?t=2'},
+                {type: 'image', src: 'https://source.unsplash.com/random?t=3'}
+              ]
+
+              const mv = x.querySelector('fw-mediaviewer#basic')
+              mv.items = exampleMedia
+
+              x.querySelector('.open').addEventListener('click', () => mv.open())
+              x.querySelector('.basicOpenOnPage').addEventListener('click', () => {
+                let p = window.prompt('Which page? [0-2]')
+                mv.selectedIndex = +p;
+                mv.open();
+              })
+            }(document))
+          </script>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+  <div class="vertical-section-container centered">
+    <h4>Single photo with a sidebar</h4>
+    <p>The "after" side area will be below the image on narrower viewports.</p>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind">
+          <style is="custom-style">
+          #single-with-sidebar {
+            --fw-mediaviewer-sidecontent-after: {
+              min-width: 250px;
+              padding: 10px;
+            };
+          }
+          </style>
+
+          <fw-mediaviewer id="single-with-sidebar" selected-item={{it}}>
+            <aside after>
+              <h2>{{it.title}}</h2>
+              <p>{{it.description}}</p>
+            </aside>
+          </fw-mediaviewer>
+          <button type="button" class="open2">Open</button>
+
+          <script type="text/javascript">
+            (function(x) {
+              const exampleMedia = [
+                {
+                  type: 'image',
+                  src: 'https://source.unsplash.com/random?t=4',
+                  title: 'Some image title',
+                  description: 'Some image description'
+                }
+              ]
+
+              const mv = x.querySelector('fw-mediaviewer#single-with-sidebar')
+              mv.items = exampleMedia
+
+              x.querySelector('.open2').addEventListener('click', () => mv.open())
+            }(document))
+          </script>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+  <div class="vertical-section-container centered">
+    <h4>Single video</h4>
+    <p>Note that the video will not play by itself by default.</p>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind">
+          <fw-mediaviewer id="single-video"></fw-mediaviewer>
+          <button type="button" class="open3">Open</button>
+
+          <script type="text/javascript">
+            (function(x) {
+              const exampleMedia = [
+                {
+                  type: 'video',
+                  src: 'http://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_h264.mov',
+                  thumbnail: 'https://peach.blender.org/wp-content/uploads/its-a-trap.png?3016dc',
+                  autoplay: true
+                }
+              ]
+
+              const mv = x.querySelector('fw-mediaviewer#single-video')
+              mv.items = exampleMedia
+
+              x.querySelector('.open3').addEventListener('click', () => mv.open())
+            }(document))
+          </script>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+</html>
