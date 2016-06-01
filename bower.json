@@ -12,7 +12,8 @@
     "gallery"
   ],
   "license": "MIT",
-  "homepage": "",
+  "repository": "https://github.com/FLamparski/fw-mediaviewer",
+  "homepage": "http://www.filipwieland.com/fw-mediaviewer/components/fw-mediaviewer/",
   "ignore": [
     "**/.*",
     "node_modules",
