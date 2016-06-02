@@ -311,6 +311,9 @@ is selected. This way, no video will play when the dialog is closed.
        * be reloaded.
        */
       _updateItems: function() {
+        if (!this.items.length) {
+          return;
+        }
         var old = this.selectedIndex;
         this.selectedIndex = 0;
         if (old === 0) {
@@ -319,10 +322,16 @@ is selected. This way, no video will play when the dialog is closed.
       },
 
       _onIndexChanged: function(i) {
+        if (!this.items.length) {
+          return;
+        }
         this._setSelectedItem(this.items[i]);
       },
 
       _onSelect: function(it) {
+        if (!it) {
+          return;
+        }
         var strategy = this._strategies[it.type];
         if (!strategy) {
           console.warn("[fw-mediaviewer] Cannot display media of type", it.type);
