@@ -99,7 +99,8 @@
   </div>
   <div class="vertical-section-container centered">
     <h4>Single video</h4>
-    <p>Note that the video will not play by itself by default.</p>
+    <p>Note that the video will not play by itself by default, specify <code>autoplay</code> on the video or <code>autoplayVideos</code> on the element.
+    Additionally, autoplay may or may not work on mobile browsers - in Chrome for Android, only touch input event listeners can call <code>.play()</code>.</p>
     <demo-snippet>
       <template>
         <template is="dom-bind">

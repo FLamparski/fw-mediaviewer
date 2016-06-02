@@ -85,6 +85,10 @@ is selected. This way, no video will play when the dialog is closed.
         .sidecontent.after {
           @apply(--layout-flex-1);
         }
+        #viewer[media-type=video] {
+          @apply(--layout-horizontal);
+          @apply(--layout-center);
+        }
       }
       .inner {
         position: relative;
@@ -329,6 +333,7 @@ is selected. This way, no video will play when the dialog is closed.
         } else {
           this[strategy](it);
         }
+        this.$.viewer.setAttribute('media-type', it.type);
       },
 
       _maybeAutoplayVideo: function(it) {
