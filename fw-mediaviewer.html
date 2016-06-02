@@ -151,8 +151,8 @@ is selected. This way, no video will play when the dialog is closed.
       <div class="sidecontent before"><content select="aside[before]"></content></div>
       <div class="inner">
         <div id="viewer"></div>
-        <div class="control previous" hidden$=[[_isOneItem(items)]] on-tap="selectPrevious"><paper-icon-button icon="chevron-left"></paper-icon-button></div>
-        <div class="control next" hidden$=[[_isOneItem(items)]] on-tap="selectNext"><paper-icon-button icon="chevron-right"></paper-icon-button></div>
+        <div class="control previous" hidden$=[[_hideControls(items)]] on-tap="selectPrevious"><paper-icon-button icon="chevron-left"></paper-icon-button></div>
+        <div class="control next" hidden$=[[_hideControls(items)]] on-tap="selectNext"><paper-icon-button icon="chevron-right"></paper-icon-button></div>
         <div class="control bottombar"><content select=".overlay"></content></div>
         <div class="control close" on-tap="close">
           <paper-icon-button icon="close"></paper-icon-button>
@@ -359,8 +359,8 @@ is selected. This way, no video will play when the dialog is closed.
         }
       },
 
-      _isOneItem: function(xs) {
-        return xs.length === 1;
+      _hideControls: function(xs) {
+        return xs.length <= 1;
       },
 
       _onOpen: function() {
