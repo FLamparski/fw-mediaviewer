@@ -29,6 +29,7 @@
     "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^1.7.6",
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.1.1",
     "iron-demo-helpers": "^1.2.3",
-    "iron-image": "^1.2.3"
+    "iron-image": "^1.2.3",
+    "paper-video": "FLamparski/paper-video#css-styling"
   }
 }
