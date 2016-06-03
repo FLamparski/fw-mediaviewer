@@ -361,6 +361,7 @@ is selected. This way, no video will play when the dialog is closed.
 
       _maybeAutoplayVideo: function(it) {
         if (it.type === 'video') {
+          this._currentMediaElement.$.container.focus();
           if ((it.autoplay || this.autoplayVideos) && this._currentMediaElement !== null && this.opened) {
             this._currentMediaElement.play();
           }
@@ -389,10 +390,9 @@ is selected. This way, no video will play when the dialog is closed.
       },
 
       _onKeyup: function(e) {
-        switch (e.which) {
+        switch (e.which || e.keyCode) {
           case 39: this.selectNext(); break; // right arrow
           case 37: this.selectPrevious(); break; // left arrow
-          case 32: this._toggleVideo(); break; // space
         }
       }
     });
