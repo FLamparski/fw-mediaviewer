@@ -1,0 +1,45 @@
+{
+  "name": "fw-mediaviewer",
+  "authors": [
+    "Filip Wieland <filiplamparski@gmail.com>"
+  ],
+  "description": "A media viewer web component with previous/next navigation and video playback support",
+  "main": "fw-mediaviewer.html",
+  "keywords": [
+    "web-components",
+    "media",
+    "image",
+    "gallery"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/FLamparski/fw-mediaviewer",
+  "homepage": "http://www.filipwieland.com/fw-mediaviewer/components/fw-mediaviewer/",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "^1.5.0",
+    "iron-selector": "^1.5.2",
+    "iron-component-page": "^1.1.6",
+    "iron-flex-layout": "^1.3.1",
+    "iron-overlay-behavior": "PolymerElements/iron-overlay-behavior#^1.7.6",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^1.1.1",
+    "iron-demo-helpers": "^1.2.3",
+    "iron-image": "^1.2.3",
+    "paper-video": "FLamparski/paper-video#css-styling"
+  },
+  "_release": "595c3a57fa",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "595c3a57fa38763c193c80251f89e251b8c7660e"
+  },
+  "_source": "git://github.com/FLamparski/fw-mediaviewer.git",
+  "_target": "master",
+  "_originalSource": "FLamparski/fw-mediaviewer",
+  "_direct": true
+}

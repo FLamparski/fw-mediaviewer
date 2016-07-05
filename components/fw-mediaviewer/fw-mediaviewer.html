@@ -1,0 +1,413 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-image/iron-image.html">
+
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../paper-video/paper-video.html">
+
+<!--
+A media viewer element.
+
+## Usage
+
+Media items should be structured at least like so:
+
+    [
+      { type: 'image', src: 'https://example.com/path/to/image.jpg' },
+      { type: 'video', src: 'https://example.com/path/to/video.mp4', thumbnail: 'https://example.com/path/to/video.jpg' }
+    ]
+
+Because `selectedItem` supports two-way binding, and it gets the actual
+selected item, you can also add your custom fields to the media model and
+use that in your side content panels.
+
+## Media reference:
+
+The following shows what properties you can define on media item objects:
+
+    {
+      type: 'image' | 'video', // also extensible with strategies
+      src: '<url>', // all strategies
+      srctype: 'mime/type', // currently only for 'video', used for <source type="...">
+      thumbnail: '<url>', // currently only 'video', used for the "poster" attribute
+      autoplay: <bool>, // currently only for 'video', determnies whether the video should start automatically
+      // plus your own data
+    }
+
+## Remarks on videos
+
+Videos will be added with just one `source`, and by default it is set to
+`video/mp4`. You can specify a `srctype` property on your video to change it
+to something else. There is currently no support for multiple sources.
+
+Autoplay videos will play once they are navigated to, or once the dialog
+has opened. Videos will also be paused when the dialog is closed and the video
+is selected. This way, no video will play when the dialog is closed.
+
+@demo demo/fw-mediaviewer.html
+@element fw-mediaviewer
+-->
+<dom-module id="fw-mediaviewer">
+  <template>
+    <style include="iron-flex">
+      :host {
+        @apply(--fw-mediaviewer);
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      .container {
+        width: 100%;
+        height: 100%;
+      }
+      @media screen and (min-width: 768px) {
+        .container {
+          @apply(--layout-horizontal);
+        }
+        .inner {
+          height: 100%;
+          @apply(--layout-flex);
+        }
+      }
+      @media screen and (max-width: 767px) {
+        .container {
+          height: 100%;
+          @apply(--layout-vertical);
+        }
+        .inner {
+          @apply(--layout-flex-2);
+        }
+        .sidecontent.after {
+          @apply(--layout-flex-1);
+        }
+        #viewer[media-type=video] {
+          @apply(--layout-horizontal);
+          @apply(--layout-center);
+        }
+      }
+      .inner {
+        position: relative;
+        @apply(--fw-mediaviewer-inner);
+      }
+      #viewer {
+        height: 100%;
+        width: 100%;
+        background-color: #a0a0a0;
+        @apply(--fw-mediaviewer-viewer);
+      }
+      :host(.apply-apple-workarounds) #viewer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      #viewer > * {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      #viewer > paper-video {
+        --layout-fullblock: {
+          display: block;
+          width: 100%;
+          height: 100%;
+        };
+        --paper-video-container: {
+          @apply(--layout-fullblock);
+        };
+        --paper-video-wrapper: {
+          @apply(--layout-fullblock);
+        };
+        --paper-video-video: {
+          @apply(--layout-fullblock);
+        }
+      }
+      .control {
+        position: absolute;
+      }
+      .previous, .next {
+        top: calc(50% - var(--fw-mediaviewer-control-size, 40px) / 2);
+      }
+      .previous {
+        left: 10px;
+      }
+      .next {
+        right: 10px;
+      }
+      .close {
+        top: 10px;
+        right: 10px;
+      }
+      .control > paper-icon-button {
+        width: var(--fw-mediaviewer-control-size, 40px);
+        height: var(--fw-mediaviewer-control-size, 40px);
+        border-radius: 100%;
+        background-color: rgba(255, 255, 255, 0.5);
+        @apply(--fw-mediaviewer-control-button);
+      }
+      .control:empty {
+        display: none;
+      }
+
+      .sidecontent {
+        background-color: #fff;
+        @apply(--fw-mediaviewer-sidecontent);
+      }
+      .sidecontent:empty {
+        display: none;
+      }
+      .sidecontent.before {
+        @apply(--fw-mediaviewer-sidecontent-before);
+      }
+      .sidecontent.after {
+        @apply(--fw-mediaviewer-sidecontent-after);
+      }
+    </style>
+
+    <div class="container">
+      <div class="sidecontent before"><content select="aside[before]"></content></div>
+      <div class="inner">
+        <div id="viewer"></div>
+        <div class="control previous" hidden$=[[_hideControls(items)]] on-tap="selectPrevious"><paper-icon-button icon="chevron-left"></paper-icon-button></div>
+        <div class="control next" hidden$=[[_hideControls(items)]] on-tap="selectNext"><paper-icon-button icon="chevron-right"></paper-icon-button></div>
+        <div class="control bottombar"><content select=".overlay"></content></div>
+        <div class="control close" on-tap="close">
+          <paper-icon-button icon="close"></paper-icon-button>
+        </div>
+      </div>
+      <div class="sidecontent after"><content select="aside[after]"></content></div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'fw-mediaviewer',
+
+      behaviors: [
+        Polymer.IronOverlayBehavior
+      ],
+
+      properties: {
+        /**
+         * Whether a backdrop should be added
+         */
+        withBackdrop: {
+          type: Boolean,
+          value: true
+        },
+
+        /**
+         * The media items to cycle through
+         */
+        items: {
+          type: Array,
+          value: function() { return []; },
+          observer: '_updateItems'
+        },
+
+        /**
+         * Currently viewed media item
+         */
+        selectedItem: {
+          type: Object,
+          value: function() { return {}; },
+          notify: true,
+          readOnly: true,
+          observer: '_onSelect'
+        },
+
+        /**
+         * The index of the currently selected item
+         */
+        selectedIndex: {
+          type: Number,
+          value: 0,
+          notify: true,
+          observer: '_onIndexChanged'
+        },
+
+        /**
+         * Whether to autoplay all videos. Autoplay can also be
+         * turned on by setting `{type: 'video', autoplay: true}`.
+         */
+        autoplayVideos: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      attached: function() {
+        if (/i(Pad|Pod|Phone)/.test(navigator.platform)) {
+          this.classList.add('apply-apple-workarounds');
+        }
+      },
+
+      /**
+       * Fired when the selected item changes.
+       * @event selected-item-changed
+       */
+      listeners: {
+        'iron-overlay-opened': '_onOpen',
+        'iron-overlay-closed': '_onClose',
+        'iron-overlay-cancelled': '_onClose',
+        'keyup': '_onKeyup'
+      },
+
+      _currentMediaElement: null,
+
+      /**
+       * Select the previous media item.
+       */
+      selectPrevious: function() {
+        if (this.selectedIndex === 0) {
+          this.selectedIndex = this.items.length - 1;
+        } else {
+          this.selectedIndex--;
+        }
+      },
+
+      /**
+       * Select the next media item.
+       */
+      selectNext: function() {
+        if (this.selectedIndex === this.items.length - 1) {
+          this.selectedIndex = 0;
+        } else {
+          this.selectedIndex++;
+        }
+      },
+
+      /**
+       * This allows you to customise how different media types are
+       * displayed. By default, `fw-mediaviewer` comes with basic
+       * strategies for dislpaying images and videos, however
+       * this way you can add your own strategies.
+       *
+       * Strategies should be functions (or in case of builtins, strings that identify methods).
+       * In both cases, the functions will receive one argument, the selected item.
+       * `this` will be the current element; Use `this._replaceMedia` which
+       * takes in an element to update the media view.
+       */
+      useStrategy: function(name, strategy) {
+        this._strategies[name] = strategy;
+      },
+
+      _strategies: {
+        'image': '_displayImage',
+        'video': '_displayVideo'
+      },
+
+      /**
+       * Replace the media view with element `el`
+       * @param el {Element}
+       */
+      _replaceMedia: function(el) {
+        this.$.viewer.innerHTML = '';
+        Polymer.dom(this.$.viewer).appendChild(el);
+        this._currentMediaElement = el;
+      },
+
+      _displayImage: function(it) {
+        var img = document.createElement('iron-image');
+        img.src = it.src;
+        img.sizing = 'contain';
+        img.preload = true;
+        img.fade = true;
+        this._replaceMedia(img);
+      },
+
+      _displayVideo: function(it) {
+        var video = document.createElement('paper-video');
+        video.poster = it.thumbnail;
+        video.controls = true;
+        video.src = it.src;
+
+        this._replaceMedia(video);
+        this._maybeAutoplayVideo(it);
+      },
+
+      /**
+       * Upon a change of items, index will be reset to 0 and the item will
+       * be reloaded.
+       */
+      _updateItems: function() {
+        if (!this.items.length) {
+          return;
+        }
+        var old = this.selectedIndex;
+        this.selectedIndex = 0;
+        if (old === 0) {
+          this._setSelectedItem(this.items[0]);
+        }
+      },
+
+      _onIndexChanged: function(i) {
+        if (!this.items.length) {
+          return;
+        }
+        this._setSelectedItem(this.items[i]);
+      },
+
+      _onSelect: function(it) {
+        if (!it) {
+          return;
+        }
+        var strategy = this._strategies[it.type];
+        if (!strategy) {
+          console.warn("[fw-mediaviewer] Cannot display media of type", it.type);
+          return;
+        }
+        if (typeof strategy === 'function') {
+          strategy.call(this, it);
+        } else {
+          this[strategy](it);
+        }
+        this.$.viewer.setAttribute('media-type', it.type);
+      },
+
+      _maybeAutoplayVideo: function(it) {
+        if (it.type === 'video') {
+          this._currentMediaElement.$.container.focus();
+          if ((it.autoplay || this.autoplayVideos) && this._currentMediaElement !== null && this.opened) {
+            this._currentMediaElement.play();
+          }
+        }
+      },
+
+      _toggleVideo: function() {
+        if (this.selectedItem.type === 'video') {
+          this._currentMediaElement[this._currentMediaElement.paused ? 'play' : 'pause']();
+        }
+      },
+
+      _hideControls: function(xs) {
+        return xs.length <= 1;
+      },
+
+      _onOpen: function() {
+        var it = this.selectedItem;
+        this._maybeAutoplayVideo(it);
+      },
+
+      _onClose: function() {
+        if (this.selectedItem.type === 'video') {
+          this._currentMediaElement.pause();
+        }
+      },
+
+      _onKeyup: function(e) {
+        switch (e.which || e.keyCode) {
+          case 39: this.selectNext(); break; // right arrow
+          case 37: this.selectPrevious(); break; // left arrow
+        }
+      }
+    });
+  </script>
+</dom-module>
