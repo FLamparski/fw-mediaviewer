@@ -102,6 +102,13 @@ is selected. This way, no video will play when the dialog is closed.
         background-color: #a0a0a0;
         @apply(--fw-mediaviewer-viewer);
       }
+      :host(.apply-apple-workarounds) #viewer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
       #viewer > * {
         display: block;
         width: 100%;
@@ -233,6 +240,12 @@ is selected. This way, no video will play when the dialog is closed.
         autoplayVideos: {
           type: Boolean,
           value: false
+        }
+      },
+
+      attached: function() {
+        if (/i(Pad|Pod|Phone)/.test(navigator.platform)) {
+          this.classList.add('apply-apple-workarounds');
         }
       },
 
